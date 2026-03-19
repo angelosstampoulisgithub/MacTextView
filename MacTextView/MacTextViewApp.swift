@@ -12,7 +12,65 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         clearDefaultMenus()
         setupMenus()
+        NotificationCenter.default.addObserver(
+              forName: .performSave,
+              object: nil,
+              queue: .main
+          ) { note in
+              if let (text, url) = note.object as? (String, URL?) {
+                  self.saveToDisk(text: text, url: url)
+              }
+          }
+
+          NotificationCenter.default.addObserver(
+              forName: .performSaveAs,
+              object: nil,
+              queue: .main
+          ) { note in
+              if let text = note.object as? String {
+                  self.saveAsToDisk(text: text)
+              }
+          }
     }
+    func saveToDisk(text: String, url: URL?) {
+        guard let url = url else {
+            saveAsToDisk(text: text)
+            return
+        }
+
+        do {
+            try text.data(using: .utf8)?.write(to: url)
+        } catch {
+            print("Save failed:", error)
+        }
+    }
+    func saveAsToDisk(text: String) {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.plainText]
+        panel.canCreateDirectories = true
+        panel.nameFieldStringValue = "Untitled.txt"
+
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                do {
+                    try text.data(using: .utf8)?.write(to: url)
+
+                    // ενημέρωσε το ContentView ότι σώθηκε σε νέο URL
+                    NotificationCenter.default.post(
+                        name: .openFile,
+                        object: (text, url)
+                    )
+
+                } catch {
+                    print("Save As failed:", error)
+                }
+            }
+        }
+    }
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+            true
+    }
+    
     @objc func showFindPanel() {
         NSApp.keyWindow?.makeFirstResponder(NSApp.keyWindow?.firstResponder)
         NSApp.sendAction(#selector(NSResponder.performTextFinderAction(_:)),
@@ -46,13 +104,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func clearDefaultMenus() {
         NSApplication.shared.mainMenu = NSMenu()   // άδειο menu bar
     }
+    @objc func performSave(_ sender: Any?) {
+        NotificationCenter.default.post(name: .saveFile, object: nil)
+    }
 
+    @objc func performSaveAs(_ sender: Any?) {
+        NotificationCenter.default.post(name: .saveFileAs, object: nil)
+    }
+    @objc func openDocument(_ sender: Any?) {
+          let panel = NSOpenPanel()
+          panel.allowedContentTypes = [.plainText]
+          panel.allowsMultipleSelection = false
+          panel.canChooseDirectories = false
+
+          panel.begin { response in
+              guard response == .OK, let url = panel.url else { return }
+
+              do {
+                  let data = try Data(contentsOf: url)
+                  let text = String(decoding: data, as: UTF8.self)
+
+                  // Ενημέρωσε το ContentView
+                  NotificationCenter.default.post(
+                      name: .openFile,
+                      object: (text, url)
+                  )
+              } catch {
+                  print("Open failed:", error)
+              }
+          }
+    }
+    @objc func printDocument(_ sender: Any?) {
+            guard let window = NSApp.keyWindow,
+                  let contentView = window.contentView else { return }
+
+            let printInfo = NSPrintInfo.shared
+            let operation = NSPrintOperation(view: contentView, printInfo: printInfo)
+            operation.run()
+    }
+    @objc func newFile(_ sender: Any?) {
+            NotificationCenter.default.post(name: .newFile, object: nil)
+    }
     private func setupMenus() {
         let mainMenu = NSMenu()
 
         // MARK: - App Menu
         let appItem = NSMenuItem()
-        let appMenu = NSMenu(title: "Application")
+        let appMenu = NSMenu(title: "MacTextView")
         appMenu.addItem(withTitle: "About",
                         action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
                         keyEquivalent: "")
@@ -66,23 +164,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // MARK: - File Menu
         let fileItem = NSMenuItem()
         let fileMenu = NSMenu(title: "File")
+
         fileMenu.addItem(withTitle: "New",
-                         action: #selector(NSDocumentController.newDocument(_:)),
+                         action: #selector(newFile(_:)),
                          keyEquivalent: "n")
+
         fileMenu.addItem(withTitle: "Open…",
                          action: #selector(NSDocumentController.openDocument(_:)),
                          keyEquivalent: "o")
+
         fileMenu.addItem(NSMenuItem.separator())
+
         fileMenu.addItem(withTitle: "Save",
-                         action: #selector(NSDocument.save(_:)),
+                         action: #selector(performSave(_:)),
                          keyEquivalent: "s")
+
         fileMenu.addItem(withTitle: "Save As…",
-                         action: #selector(NSDocument.saveAs(_:)),
+                         action: #selector(performSaveAs(_:)),
                          keyEquivalent: "S")
+
         fileMenu.addItem(NSMenuItem.separator())
+
         fileMenu.addItem(withTitle: "Print…",
-                         action: #selector(NSView.printView(_:)),
+                         action: #selector(printDocument(_:)),
                          keyEquivalent: "p")
+
         fileItem.submenu = fileMenu
         mainMenu.addItem(fileItem)
 
@@ -172,6 +278,10 @@ struct MacTextViewApp: App {
         WindowGroup {
             ContentView()
         }
-        
+        .commands {
+                   CommandGroup(replacing: .newItem) { }
+                   CommandGroup(replacing: .saveItem) { }
+                   CommandGroup(replacing: .windowList) { }
+               }
     }
 }
