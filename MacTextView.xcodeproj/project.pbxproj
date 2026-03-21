@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D63383BF2F6F439000923B8D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63383BE2F6F439000923B8D /* AppDelegate.swift */; };
 		D63525FA2F6B41C700BDDE5D /* MacTextViewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63525F92F6B41C700BDDE5D /* MacTextViewApp.swift */; };
 		D63525FC2F6B41C700BDDE5D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63525FB2F6B41C700BDDE5D /* ContentView.swift */; };
 		D63525FE2F6B41C900BDDE5D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D63525FD2F6B41C900BDDE5D /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D63383BE2F6F439000923B8D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D63525F62F6B41C700BDDE5D /* MacTextView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacTextView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D63525F92F6B41C700BDDE5D /* MacTextViewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTextViewApp.swift; sourceTree = "<group>"; };
 		D63525FB2F6B41C700BDDE5D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				D63525FD2F6B41C900BDDE5D /* Assets.xcassets */,
 				D63526022F6B41C900BDDE5D /* MacTextView.entitlements */,
 				D63525FF2F6B41C900BDDE5D /* Preview Content */,
+				D63383BE2F6F439000923B8D /* AppDelegate.swift */,
 			);
 			path = MacTextView;
 			sourceTree = "<group>";
@@ -276,6 +279,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D63383BF2F6F439000923B8D /* AppDelegate.swift in Sources */,
 				D63525FC2F6B41C700BDDE5D /* ContentView.swift in Sources */,
 				D63526272F6B427100BDDE5D /* CustomNSTextView.swift in Sources */,
 				D63526292F6B441A00BDDE5D /* LineNumberRulerView.swift in Sources */,
